@@ -1,18 +1,13 @@
 import requests
-import os
 from abc import ABC, abstractmethod
-from dotenv import load_dotenv
-
-load_dotenv()
-
-GIT_TOKEN = os.getenv("GIT_TOKEN")
 
 
 class Homework(ABC):
-    @property
-    @abstractmethod
-    def unified(self) -> str:
-        pass
+    def __init__(self, file: dict):
+        self.file = file
+
+    def __repr__(self):
+       return f"<Homework name={self.file['name']}, content={self.file['content']}>"
 
 
 class PythonHomework(Homework):
@@ -23,27 +18,21 @@ class PythonHomework(Homework):
     def unified(self) -> str:
         return "\n\n".join([f"# {file['name']}\n{file['content']}" for file in self.files])
 
-    def __str__(self):
-        return f"PythonHomework<files: {self.files}>"
-
 
 class Lesson:
-    repo = "https://api.github.com/repos/azatovhikmatyor/bi-and-ai-talents"
+    repo = "https://api.github.com/repos/azatovhikmatyor/bi_and_ai_group"
     branch = "main"
 
     def __init__(self, lesson_num: int, topic: str = None):
         self.lesson_num = lesson_num
         self.topic = topic
-        self.homework_files = []
+        self.homework_files = []  
 
-    def _fetch_homework_files(self):
+    def fetch_homework_files(self):
         folder_path = f"lesson-{self.lesson_num}/homework"
         api_url = f"{self.repo}/contents/{folder_path}?ref={self.branch}"
 
-        headers = {
-            "Accept": "application/vnd.github.v3+json",
-            "Authorization": f"token {GIT_TOKEN}"
-        }
+        headers = {"Accept": "application/vnd.github.v3+json"}
 
         try:
             response = requests.get(api_url, headers=headers)
@@ -70,5 +59,10 @@ class Lesson:
     @property
     def homework(self) -> Homework:
         if not self.homework_files:  
-            self._fetch_homework_files()
+            self.fetch_homework_files()
         return PythonHomework(self.homework_files)
+
+
+if __name__ == '__main__':
+    lesson10 = Lesson(lesson_num=10, topic="Introduction")
+    print(lesson10.homework.unified)

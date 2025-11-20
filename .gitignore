@@ -1,4 +1,7 @@
 /gs-keys.json
+.vscode
+/chat_ids.txt
+/telegram/test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

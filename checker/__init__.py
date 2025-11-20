@@ -1,1 +1,1 @@
-from .cheker import HomeworkChecker
+from .checker import HomeworkChecker

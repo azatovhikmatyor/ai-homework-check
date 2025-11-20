@@ -1,21 +1,15 @@
-from .base import Lesson, Homework
-
+from .base import Lesson
 
 class Content:
-    repo = "https://github.com/azatovhikmatyor/bi_and_ai_group.git"
-    branch = "main"
+    
+    def get_lesson(self, lesson_num: int) -> Lesson:
+        return Lesson(lesson_num=lesson_num, topic=f'Lesson-{lesson_num}')
 
-    # XXX: What should __init__() do?
 
-    @property
-    def lessons(self) -> list[Lesson]:
-        # NOTE: fake implementation
-        return [Lesson(topic=f"lesson {i}") for i in range(20)]
-
-    def get_homework(self, lesson_num: int) -> Homework:
-        try:
-            lesson = self.lessons[lesson_num]
-        except IndexError:
-            raise Exception(f"There is no lesson for {lesson_num=} yet.")
-        else:
-            return lesson.homework
+if __name__ == "__main__":
+    N = 10
+    content = Content()
+    lesson = content.get_lesson(lesson_num=N)
+    homework = lesson.homework
+    print(homework.unified)
+    

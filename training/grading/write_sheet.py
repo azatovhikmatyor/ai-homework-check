@@ -8,7 +8,7 @@ gc = gspread.service_account(filename=os.getenv("KEY_FILE_PATH"))
 
 spreadsheet = gc.open_by_url(os.getenv("SHEET_URL"))
 
-worksheet = spreadsheet.worksheet('Sheet5') # Input sheet name
+worksheet = spreadsheet.worksheet('Sheet5')
 
 def get_column_index(worksheet, column_name):
     header = worksheet.row_values(1)
@@ -17,19 +17,28 @@ def get_column_index(worksheet, column_name):
     else:
         raise ValueError(f"Column '{column_name}' not found in the sheet")
 
-# Column name
-column_name = "CLASS12 (H/W)" 
+# Function to find the row containing the specific name in a column
+def find_row(worksheet, name, search_column_index):
+    column_data = worksheet.col_values(search_column_index)  # Get all values in the column
+    for row_index, cell_value in enumerate(column_data):
+        if cell_value == name:
+            return row_index + 1  # Add 1 to convert 0-based index to 1-based index
+    raise ValueError(f"Name '{name}' not found in the column")
 
-data = [100, 90, 80, 50, 0, 0, 15, 70, 80, 90, 100, 100, 100, 100, 100, 90, 90, 0]
+# Inputs
+name_to_search = "Samandar"  
+column_name_to_write = "CLASS12 (H/W)" 
+value_to_write = 30  # Replace with the value to write
 
-# Get the column index based on the column name
-column_index = get_column_index(worksheet, column_name)
-start_row = 2
+# Get the column index for the column name
+target_column_index = get_column_index(worksheet, column_name_to_write)
 
-# Update the column with data starting from the desired row
-for i, value in enumerate(data):
-    
-    cell = worksheet.cell(start_row + i, column_index)
-    worksheet.update_cell(cell.row, cell.col, value)
+# Get the column index where the name resides (e.g., "Name" column)
+search_column_index = get_column_index(worksheet, "First Name")  
+
+# # Find the row containing the name
+target_row = find_row(worksheet, name_to_search, search_column_index)
+
+worksheet.update_cell(target_row, target_column_index, value_to_write)
 
 print("Successfully added!")

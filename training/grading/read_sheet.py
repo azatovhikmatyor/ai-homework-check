@@ -11,14 +11,13 @@ gc = gspread.service_account(filename=os.getenv("KEY_FILE_PATH"))
 spreadsheet = gc.open_by_url(os.getenv("SHEET_URL")) 
 
 # Select the worksheet
-worksheet = spreadsheet.worksheet('Python scores')
+worksheet = spreadsheet.worksheet('Git')
 
 # Get all values from the sheet
 data = worksheet.get_all_values()
 
+# df = pd.DataFrame(data[1:], columns=data[0])
+# print(df)
+# df.to_csv("output.csv", index=False)
 
-df = pd.DataFrame(data[1:], columns=data[0])
-
-df.to_csv("output.csv", index=False)
-
-print("Data successfully saved to output.csv")
+# print("Data successfully saved to output.csv")
