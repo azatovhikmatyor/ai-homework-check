@@ -2,6 +2,9 @@ import gspread
 from dataclasses import dataclass
 import pandas as pd
 import requests
+from urllib.parse import quote
+
+from lesson import Lesson
 
 
 @dataclass
@@ -19,7 +22,18 @@ class Student:
         )
     
     def get_solution(self, lesson_num, subject):
-        pass
+        repo = "https://github.com/mardonbekhazratov/ai-homework"
+        lesson = Lesson(
+            lesson_num=lesson_num,
+            subject=subject,
+            repo=repo
+        )
+        lesson._fetch_homework_files(ext=["py", "ipynb"])
+        return "\n\n".join(
+            [
+                f"# {file['name']}\n{file['content']}" for file in lesson.homework_files
+            ]
+        )
 
 
 
@@ -145,4 +159,6 @@ if __name__ == '__main__':
     student = sheet.get_student_by_id(user_id)
 
     solution = student.get_solution(lesson_num=lesson_number, subject=subject)
+
+    print(solution)
 
