@@ -58,6 +58,9 @@ class Lesson:
         return "\n\n".join([f"# {file['name']}\n{file['content']}" for file in self.homework_files])
 
 if __name__ == '__main__':
-    l = Lesson(3, 'ml')
+    lesson_number = 3
+    subject = 'ml' # 'dl'
+
+    l = Lesson(lesson_number, subject)
 
     print(l.homework)

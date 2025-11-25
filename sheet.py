@@ -138,9 +138,11 @@ if __name__ == '__main__':
     lesson_number = 3
     subject = 'ml'
 
-    
+
     spreadsheet_url = "https://docs.google.com/spreadsheets/d/1SV34tnSlfh-2iu3X_OOewG_7T839jhwiqNxhSr4SAbI/edit?gid=872752510#gid=872752510"
     sheet = SpreadSheet(spreadsheet_url)
 
     student = sheet.get_student_by_id(user_id)
+
+    solution = student.get_solution(lesson_num=lesson_number, subject=subject)
 
