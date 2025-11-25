@@ -1,9 +1,0 @@
-from .base import Homework, Lesson, PythonHomework
-from .content import Content
-
-__all__ = [
-    "Content",
-    "Homework",
-    "Lesson",
-    "PythonHomework",
-]

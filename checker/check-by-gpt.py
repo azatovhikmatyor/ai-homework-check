@@ -1,7 +1,7 @@
 import openai
 import re
 import textwrap
-from content.base import Homework, PythonHomework
+from content_old.base import Homework, PythonHomework
 from sheet.base import Solution, PythonSolution
 from telegram import Telegram
 from dotenv import load_dotenv
