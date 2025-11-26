@@ -100,7 +100,7 @@ class SpreadSheet:
         return [Student.from_sheet_dict(student) for student in students]
 
 
-    def mark_student(self, student, lesson_number, subject, mark):
+    def mark_student(self, student, lesson_number, subject, score):
         pass
 
 

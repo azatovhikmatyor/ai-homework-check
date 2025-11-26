@@ -98,6 +98,7 @@ if __name__ == '__main__':
 
     res = checker.check(solution=solution)
     print(res['score'])
-    print(res['Feedback'])
+    print(res['feedback'])
+
     
 
