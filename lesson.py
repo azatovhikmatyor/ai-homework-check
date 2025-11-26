@@ -9,8 +9,8 @@ class Lesson:
         "Accept": "application/vnd.github.v3+json"
     }
 
-    def __init__(self, lesson_num: int, subject: str, topic: str = None, repo: str = None):
-        self.lesson_num = lesson_num
+    def __init__(self, lesson_number: int, subject: str, topic: str = None, repo: str = None):
+        self.lesson_number = lesson_number
         self.subject = subject
         self.topic = topic
         self.homework_files = []
@@ -29,12 +29,12 @@ class Lesson:
         response = requests.get(f"{self.repo}/{self.subject}?ref={self.branch}", headers=self.headers)
         response.raise_for_status()
 
-        folder_name = [info['name'] for info in response.json() if info['name'].startswith("lesson " + str(self.lesson_num).rjust(2, "0"))]
+        folder_name = [info['name'] for info in response.json() if info['name'].startswith("lesson " + str(self.lesson_number).rjust(2, "0"))]
 
         if len(folder_name) == 1:
             folder_name = folder_name[0]
         else:
-            raise Exception(f"Lesson number with {self.lesson_num} could not be found.")
+            raise Exception(f"Lesson number with {self.lesson_number} could not be found.")
 
         encoded_folder_name = quote(folder_name)
 

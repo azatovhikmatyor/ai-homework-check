@@ -1,10 +1,25 @@
+import json
 import gspread
 from dataclasses import dataclass
-import pandas as pd
 import requests
-from urllib.parse import quote
 
-from lesson import Lesson
+
+
+def ipynb_to_md(ipynb_content):
+    data = json.loads(ipynb_content)
+    md = ""
+
+    for cell in data["cells"]:
+        if cell["cell_type"] == "markdown":
+            md += "".join(cell["source"]) + "\n\n"
+
+        elif cell["cell_type"] == "code":
+            md += "```python\n"
+            md += "".join(cell["source"])
+            md += "\n```\n\n"
+
+    return md
+
 
 
 @dataclass
@@ -12,6 +27,8 @@ class Student:
     id: str
     repo: str
     group_name: str
+
+    _all_solutions = []
 
     @classmethod
     def from_sheet_dict(cls, d):
@@ -21,101 +38,41 @@ class Student:
             group_name=d['Group Name']
         )
     
-    def get_solution(self, lesson_num, subject):
-        # repo = "https://github.com/mardonbekhazratov/ai-homework"
+    def _get_solutions(self, contents):
+        for item in contents:
+            item_name = item['name']
+            item_type = item['type']
 
-        lesson = Lesson(
-            lesson_num=lesson_num,
-            subject=subject,
-            repo=self.repo
-        )
-        lesson._fetch_homework_files(ext=["py", "ipynb"])
-        return "\n\n".join(
-            [
-                f"# {file['name']}\n{file['content']}" for file in lesson.homework_files
-            ]
-        )
+            if item_type == 'dir' and item_name != '.idea':
+                res = requests.get(item['url'])
+                res.raise_for_status()
+                inner_contents = res.json()
+                self._get_solutions(inner_contents)
+            elif item_type == 'file' and item_name.endswith(('.py', '.ipynb')):
+                res1 = requests.get(item['download_url'])
+                res1.raise_for_status()
+                txt = res1.text
+                if item_name.endswith('.ipynb'):
+                    txt = ipynb_to_md(txt)
+                
+                txt = f"#{item['path']}\n\n" + txt
+
+                self._all_solutions.append(txt)
 
 
+    def get_solution(self, lesson_number, subject):
+        self._all_solutions.clear()
 
-# class Student:
-#     def __init__(self, id: int, fname: str, lname: str, repo: str, chat_id: int) -> None:
-#         self.id = id
-#         self.fname = fname
-#         self.lname = lname
-#         self.repo = repo
-#         self.chat_id = chat_id
+        base_path = f'{subject}/lesson-{lesson_number}'
+        url = f"https://api.github.com/repos/{self.repo}/contents/{base_path}?ref=main"
 
-#     def _make_request(self, url: str, token=None) -> dict:
-#         headers = {"Authorization": f"token {token}"} if token else {}
-#         response = requests.get(url, headers=headers)
-#         if response.status_code != 200:
-#             print(f"Failed to fetch from {url}: {response.status_code}, {response.json().get('message')}")
-#             return {}
-#         return response.json()
+        res = requests.get(url)
+        res.raise_for_status()
+        contents = res.json()
 
-#     def _get_branches(self, token):
-#         repo = "/".join(self.repo.split('/')[-2:])
-#         url = f"https://api.github.com/repos/{repo}/branches"
 
-#         try:
-#             branches_response = self._make_request(url, token)
-
-#             if isinstance(branches_response, list) and branches_response:
-#                 return [branch.get('name', 'main') for branch in branches_response]
-#         except Exception as e:
-#             print(f"Error fetching branches for {repo}: {e}")
-
-#         return ['main']
-
-#     def get_solution(self, lesson_num: int, token=None, base_path=None) -> Solution:
-#         branch = self._get_branches(token=token)[0] or "main"
-
-#         repo = "/".join(self.repo.split('/')[-2:])
-#         base_path = base_path or f"lesson-{lesson_num}/homework"
-#         base_url = f"https://api.github.com/repos/{repo}/contents/{base_path}?ref={branch}"
-
-#         contents = self._make_request(base_url, token)
-
-#         if not contents:
-#             return PythonSolution()
-
-#         files_content = []
-
-#         if isinstance(contents, dict):
-#             contents = [contents]
-
-#         for item in contents:
-#             item_name = item["name"]
-#             item_type = item["type"]
-
-#             if item_type == "dir" and item_name != ".idea":
-#                 subdir_files = self.get_solution(lesson_num, token, base_path=f"{base_path}/{item_name}")
-#                 files_content.extend(subdir_files.files)
-
-#             elif item_type == "file" and (
-#                 item_name.endswith(".py") or item_name.endswith(".ipynb") or
-#                 item_name.endswith(".sql") or item_name.endswith(".dbo")
-#             ):
-#                 raw_url = item["download_url"]
-#                 file_response = requests.get(raw_url)
-#                 if file_response.status_code == 200:
-#                     content = file_response.text
-#                     files_content.append({"name": item_name, "content": content})
-#                 else:
-#                     print(f"Failed to fetch file {item_name}: {file_response.status_code}")
-
-#         # Determine solution type based on file extensions
-#         if any(file["name"].endswith((".sql", ".dbo")) for file in files_content):
-#             return SqlSolution(files=files_content)
-#         else:
-#             return PythonSolution(files=files_content)
-
-#     def __str__(self) -> str:
-#         return f"ID: {self.id} | {self.fname} {self.lname}"
-
-#     def __repr__(self) -> str:
-#         return f"Student(fname={self.fname!r}, lname={self.lname!r}, repo={self.repo!r}, chat_id={self.chat_id!r})"
+        self._get_solutions(contents)
+        return '\n'.join(self._all_solutions)
 
 
 
@@ -128,7 +85,7 @@ class SpreadSheet:
 
     def get_student_by_id(self, telegram_id):
         students = self.master_ws.get_all_records()
-        student = [student for student in students if str(student['Telegram ID']) == user_id]
+        student = [student for student in students if str(student['Telegram ID']) == telegram_id]
         if len(student) == 1:
             student = student[0]
         else:
@@ -158,48 +115,11 @@ if __name__ == '__main__':
     sheet = SpreadSheet(spreadsheet_url)
 
     student = sheet.get_student_by_id(user_id)
+    solution = student.get_solution(lesson_number=lesson_number, subject=subject)
 
-    '/'.join(student.repo.split('/')[-2:])
-    repo = "/".join(self.repo.split('/')[-2:])
-    repo = 'azatovhikmatyor/demo-project'
-    base_path = 'ml/lesson-3'
-    url = f"https://api.github.com/repos/{repo}/contents/{base_path}?ref=main"
+    # NOTE: This is hardcoded
+    mark = 80
+
+    # TODO: implement this method. For not this does not work
+    sheet.mark_student(student=student, lesson_number=lesson_number, subject=subject, mark=mark)
     
-    url
-
-    res = requests.get(url)
-    res.raise_for_status()
-    data = res.json()
-
-    res1 = requests.get(data[0]['download_url'])
-    res1.raise_for_status()
-
-    txt = res1.text
-    print(txt)
-
-    import nbformat
-
-    md = ipynb_to_md(txt)
-    print(md)
-
-    solution = student.get_solution(lesson_num=lesson_number, subject=subject)
-
-    print(solution)
-
-
-
-import json
-def ipynb_to_md(ipynb_content):
-    data = json.loads(ipynb_content)
-    md = ""
-
-    for cell in data["cells"]:
-        if cell["cell_type"] == "markdown":
-            md += "".join(cell["source"]) + "\n\n"
-
-        elif cell["cell_type"] == "code":
-            md += "```python\n"
-            md += "".join(cell["source"])
-            md += "\n```\n\n"
-
-    return md
