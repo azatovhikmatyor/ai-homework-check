@@ -9,21 +9,12 @@ class Lesson:
         "Accept": "application/vnd.github.v3+json"
     }
 
-    def __init__(self, lesson_number: int, subject: str, topic: str = None, repo: str = None):
+    def __init__(self, lesson_number: int, subject: str, topic: str = None):
         self.lesson_number = lesson_number
         self.subject = subject
         self.topic = topic
         self.homework_files = []
-        if repo is not None:
-            self.repo = repo
 
-        self._format_repo()
-
-    def _format_repo(self):
-        prefix = "https://api.github.com/repos/"
-
-        if not self.repo.startswith(prefix):
-            self.repo = prefix + '/'.join(self.repo.split("github.com/")[1].split('/')[:2]) + "/contents"
 
     def _fetch_homework_files(self, ext: list[str] = ["md"]):
         response = requests.get(f"{self.repo}/{self.subject}?ref={self.branch}", headers=self.headers)
