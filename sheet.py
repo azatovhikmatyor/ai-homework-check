@@ -100,8 +100,19 @@ class SpreadSheet:
         return [Student.from_sheet_dict(student) for student in students]
 
 
-    def mark_student(self, student, lesson_number, subject, score):
-        pass
+    def mark_student(self, student: Student, lesson_number, subject: str, score):
+        scores_sheet = self.sheet.worksheet(f"{student.group_name} Scores")
+        id_cell = scores_sheet.find(str(student.id), in_column=1)
+        lesson_cell = scores_sheet.find(f"{subject.upper()} Lesson {lesson_number}", in_row=1)
+        
+        if id_cell and lesson_cell:
+            scores_sheet.update_cell(id_cell.row, lesson_cell.col, score)
+
+        elif not id_cell:
+            raise ValueError("Student with given ID not found.")
+        
+        else:
+            raise ValueError("That type of lesson does not exist on the sheet.")
 
 
 if __name__ == '__main__':
