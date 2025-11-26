@@ -22,11 +22,12 @@ class Student:
         )
     
     def get_solution(self, lesson_num, subject):
-        repo = "https://github.com/mardonbekhazratov/ai-homework"
+        # repo = "https://github.com/mardonbekhazratov/ai-homework"
+
         lesson = Lesson(
             lesson_num=lesson_num,
             subject=subject,
-            repo=repo
+            repo=self.repo
         )
         lesson._fetch_homework_files(ext=["py", "ipynb"])
         return "\n\n".join(
@@ -158,7 +159,47 @@ if __name__ == '__main__':
 
     student = sheet.get_student_by_id(user_id)
 
+    '/'.join(student.repo.split('/')[-2:])
+    repo = "/".join(self.repo.split('/')[-2:])
+    repo = 'azatovhikmatyor/demo-project'
+    base_path = 'ml/lesson-3'
+    url = f"https://api.github.com/repos/{repo}/contents/{base_path}?ref=main"
+    
+    url
+
+    res = requests.get(url)
+    res.raise_for_status()
+    data = res.json()
+
+    res1 = requests.get(data[0]['download_url'])
+    res1.raise_for_status()
+
+    txt = res1.text
+    print(txt)
+
+    import nbformat
+
+    md = ipynb_to_md(txt)
+    print(md)
+
     solution = student.get_solution(lesson_num=lesson_number, subject=subject)
 
     print(solution)
 
+
+
+import json
+def ipynb_to_md(ipynb_content):
+    data = json.loads(ipynb_content)
+    md = ""
+
+    for cell in data["cells"]:
+        if cell["cell_type"] == "markdown":
+            md += "".join(cell["source"]) + "\n\n"
+
+        elif cell["cell_type"] == "code":
+            md += "```python\n"
+            md += "".join(cell["source"])
+            md += "\n```\n\n"
+
+    return md
