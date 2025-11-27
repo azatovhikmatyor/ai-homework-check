@@ -7,32 +7,35 @@ from sheet import SpreadSheet
 from checker import HomeworkChecker
 
 
-# Assuming that Telegram bot provided this
-user_id = '1'
-lesson_number = 3
-subject = 'ml'
-
 SHEET_URL = os.getenv('SHEET_URL')
 
-lesson = Lesson(lesson_number=lesson_number, subject=subject)
-homework: str = lesson.homework # Markdown format
+def check_homework(user_id, lesson_number, subject):
 
-sheet = SpreadSheet(sheet_url=SHEET_URL)
-student = sheet.get_student_by_id(telegram_id=user_id)
-solution: str = student.get_solution(lesson_number=lesson_number, subject=subject) # Markdown format
+    lesson = Lesson(lesson_number=lesson_number, subject=subject)
+    homework: str = lesson.homework # Markdown format
 
-checker = HomeworkChecker(homework=homework)
+    sheet = SpreadSheet(sheet_url=SHEET_URL)
+    student = sheet.get_student_by_id(telegram_id=user_id)
+    solution: str = student.get_solution(lesson_number=lesson_number, subject=subject) # Markdown format
 
-res = checker.check(solution=solution)
+    checker = HomeworkChecker(homework=homework)
 
-print(res['score'])
-print(res['feedback'])
+    res = checker.check(solution=solution)
+    sheet.mark_student(student=student, lesson_number=lesson_number, subject='dl', score=res['score'])
+    return res
 
-score = res['score']
-feedback = res['feedback']
 
-# FIXME: this method is not implemented yet
-sheet.mark_student(student=student, lesson_number=lesson_number, subject=subject, score=score)
+if __name__ == '__main__':
+    # Assuming that Telegram bot provided this
+    user_id = '1'
+    lesson_number = 3
+    subject = 'ml'
 
-# Send suggestion back to the user through telegram bot
+    res = check_homework(user_id, lesson_number, subject)
+    print(res['score'])
+    print(res['feedback'])
+
+    score = res['score']
+    feedback = res['feedback']
+
 
