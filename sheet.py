@@ -70,7 +70,6 @@ class Student:
         res.raise_for_status()
         contents = res.json()
 
-
         self._get_solutions(contents)
         return '\n'.join(self._all_solutions)
 
@@ -117,9 +116,9 @@ if __name__ == '__main__':
     student = sheet.get_student_by_id(user_id)
     solution = student.get_solution(lesson_number=lesson_number, subject=subject)
 
-    # NOTE: This is hardcoded
-    mark = 80
 
     # TODO: implement this method. For not this does not work
-    sheet.mark_student(student=student, lesson_number=lesson_number, subject=subject, mark=mark)
+
+    score = 80
+    sheet.mark_student(student=student, lesson_number=lesson_number, subject=subject, score=score)
     

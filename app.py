@@ -3,6 +3,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 from dotenv import load_dotenv
 import os
 
+
 load_dotenv(dotenv_path=".env")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -24,6 +25,8 @@ async def start(update: Update, context: CallbackContext):
     # Store chat_id in your database (this example just prints it)
     with open("chat_ids.txt", "a", encoding="utf-8") as file:
         file.write(f"{fullName},{username},{chat_id}\n")
+
+
 
 def main():
     # Create the Application object

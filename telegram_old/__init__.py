@@ -1,7 +1,7 @@
 import requests
 from dotenv import load_dotenv
 import os
-from utils import logger
+
 
 load_dotenv(dotenv_path=".env")
 
@@ -32,7 +32,7 @@ class Telegram:
         if response.status_code == 200:
             print(f"Message sent successfully to chat ID: {self.chat_id}")
         else:
-            logger.error(f"Failed to send message to chat ID {self.chat_id}, {response.text}")
+            print(f"Failed to send message to chat ID {self.chat_id}, {response.text}")
 
     def send_feedback(self):
         """
